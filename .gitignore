@@ -1,0 +1,26 @@
+# Python Virtual Environment and cache
+backend/venv/
+backend/__pycache__/
+backend/local_dev.db
+backend/app/static_storage/
+backend/.pytest_cache/
+backend/tests/__pycache__/
+*.pyc
+*.pyo
+
+# Flutter build artifacts and caches
+frontend/.dart_tool/
+frontend/build/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/ephemeral/
+frontend/Generated.xcconfig
+frontend/flutter_export_environment.sh
+frontend/*.iml
+
+# Editor configurations and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log

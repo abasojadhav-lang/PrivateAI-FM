@@ -1,0 +1,32 @@
+name: frontend
+description: "PrivateFM AI - Your Personal AI Radio Station Client"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.5
+  flutter_riverpod: ^2.3.6
+  go_router: ^10.0.0
+  dio: ^5.3.0
+  flutter_secure_storage: ^8.0.0
+  glass_kit: ^4.0.2
+  just_audio: ^0.9.36
+  audio_service: ^0.18.12
+  google_fonts: ^8.1.0
+  geolocator: ^10.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
