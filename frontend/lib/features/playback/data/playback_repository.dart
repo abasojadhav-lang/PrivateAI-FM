@@ -108,4 +108,22 @@ class PlaybackRepository {
       // Ignore network errors for background telemetry
     }
   }
+
+  Future<void> linkCatalogSong({
+    required String title,
+    required String artist,
+    String? youtubeId,
+    String? coverUrl,
+  }) async {
+    await _dio.post(
+      "/api/music/link-catalog",
+      data: {
+        "title": title,
+        "artist": artist,
+        "youtube_id": (youtubeId == null || youtubeId.trim().isEmpty) ? null : youtubeId,
+        "cover_url": (coverUrl == null || coverUrl.trim().isEmpty) ? null : coverUrl,
+        "duration": 180,
+      },
+    );
+  }
 }

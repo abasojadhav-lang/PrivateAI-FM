@@ -7,6 +7,7 @@ import 'package:frontend/features/playback/presentation/playback_controller.dart
 import 'package:frontend/features/playback/presentation/now_playing_screen.dart';
 import 'package:frontend/features/stations/presentation/station_controller.dart';
 import 'package:frontend/features/stations/presentation/station_wizard_screen.dart';
+import 'package:frontend/features/playback/data/playback_repository.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -30,6 +31,13 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.library_music, color: AppColors.primary),
+            tooltip: "Add a Song",
+            onPressed: () {
+              _showAddSongDialog(context, ref);
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.textSecondary),
             onPressed: () {
@@ -305,6 +313,130 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _showAddSongDialog(BuildContext context, WidgetRef ref) {
+    final titleController = TextEditingController();
+    final artistController = TextEditingController();
+    final youtubeController = TextEditingController();
+    final coverController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    var isLoading = false;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: AppColors.background,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(color: AppColors.primary.withOpacity(0.3)),
+              ),
+              title: const Text(
+                "Add Song to Library",
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              content: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: titleController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: "Song Title *",
+                          labelStyle: TextStyle(color: AppColors.textSecondary),
+                        ),
+                        validator: (value) => (value == null || value.trim().isEmpty) ? "Required" : null,
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: artistController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: "Artist Name *",
+                          labelStyle: TextStyle(color: AppColors.textSecondary),
+                        ),
+                        validator: (value) => (value == null || value.trim().isEmpty) ? "Required" : null,
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: youtubeController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: "YouTube Video ID (Optional)",
+                          labelStyle: TextStyle(color: AppColors.textSecondary),
+                          helperText: "e.g. dQw4w9WgXcQ",
+                          helperStyle: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: coverController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: "Cover Image URL (Optional)",
+                          labelStyle: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () => Navigator.of(context).pop(),
+                  child: const Text("Cancel", style: TextStyle(color: AppColors.textSecondary)),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          if (formKey.currentState?.validate() == true) {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            try {
+                              await ref.read(playbackRepositoryProvider).linkCatalogSong(
+                                    title: titleController.text,
+                                    artist: artistController.text,
+                                    youtubeId: youtubeController.text,
+                                    coverUrl: coverController.text,
+                                  );
+                              Navigator.of(context).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Song added successfully!")),
+                              );
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Failed to add song: ${e.toString()}")),
+                              );
+                            } finally {
+                              setState(() {
+                                isLoading = false;
+                              });
+                            }
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Text("Add"),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
