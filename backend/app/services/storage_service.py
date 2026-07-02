@@ -86,6 +86,9 @@ class StorageService:
 
     async def get_streaming_url(self, storage_key: str, expires_in: int = 3600) -> str:
         """Generates a temporary signed URL for S3 or a local server path for local files."""
+        if not storage_key:
+            return ""
+            
         if storage_key.startswith("local://"):
             file_name = storage_key.replace("local://", "")
             # Return path mapped to a local server route

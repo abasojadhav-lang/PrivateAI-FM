@@ -95,6 +95,56 @@ async def upload_music(
     
     return song
 
+from pydantic import BaseModel
+from typing import Optional
+
+class CatalogSongLink(BaseModel):
+    title: str
+    artist: str
+    album: Optional[str] = None
+    genre: Optional[str] = None
+    duration: int = 180
+    youtube_id: Optional[str] = None
+    spotify_id: Optional[str] = None
+    cover_url: Optional[str] = None
+
+@router.post("/link-catalog", status_code=status.HTTP_201_CREATED)
+async def link_catalog_song(
+    data: CatalogSongLink,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    if data.youtube_id:
+        result = await db.execute(select(Song).where(Song.youtube_id == data.youtube_id))
+        if result.scalars().first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A song with this YouTube ID is already linked."
+            )
+            
+    if data.spotify_id:
+        result = await db.execute(select(Song).where(Song.spotify_id == data.spotify_id))
+        if result.scalars().first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A song with this Spotify ID is already linked."
+            )
+
+    song = Song(
+        title=data.title,
+        artist=data.artist,
+        album=data.album,
+        genre=data.genre,
+        duration=data.duration,
+        youtube_id=data.youtube_id,
+        spotify_id=data.spotify_id,
+        cover_url=data.cover_url
+    )
+    db.add(song)
+    await db.commit()
+    await db.refresh(song)
+    return song
+
 @router.get("/songs", response_model=List[dict])
 async def get_songs(
     current_user: User = Depends(get_current_user),

@@ -85,7 +85,7 @@ async def get_playback_queue(
     else:
         db_songs = []
         for s in songs:
-            stream_url = await storage_service.get_streaming_url(s.storage_url)
+            stream_url = await storage_service.get_streaming_url(s.storage_url) if s.storage_url else "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
             db_songs.append({
                 "id": s.id,
                 "title": s.title,
