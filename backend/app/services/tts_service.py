@@ -14,12 +14,26 @@ class TTSService:
         self.endpoint = "https://texttospeech.googleapis.com/v1/text:synthesize"
 
     async def synthesize_speech(self, text: str, voice_gender: str = "Female") -> str:
-        """Synthesize text to speech using Google Cloud TTS, upload to storage, and return storage key."""
+        """Synthesize text to speech using Google Cloud TTS or gTTS fallback, upload to storage, and return storage key."""
         
-        # If API key is not configured, fallback immediately
+        # If API key is not configured, use gTTS free fallback immediately
         if not self.api_key or self.api_key == "mock_tts_key":
-            logger.info("GCloud TTS API key not set. Using placeholder voice file.")
-            return "local://speech_placeholder.mp3"
+            logger.info("GCloud TTS API key not set. Using gTTS free fallback.")
+            try:
+                from gtts import gTTS
+                import io
+                
+                tts = gTTS(text=text, lang='en')
+                fp = io.BytesIO()
+                tts.write_to_fp(fp)
+                audio_bytes = fp.getvalue()
+                
+                unique_filename = f"tts_{uuid.uuid4()}.mp3"
+                storage_key = await storage_service.upload_file(audio_bytes, unique_filename)
+                return storage_key
+            except Exception as e:
+                logger.error(f"gTTS fallback failed: {str(e)}")
+                return "local://speech_placeholder.mp3"
             
         url = f"{self.endpoint}?key={self.api_key}"
         
@@ -60,7 +74,7 @@ class TTSService:
         return "local://speech_placeholder.mp3"
 
     async def create_placeholder_file_if_missing(self):
-        """Creates a short silent dummy audio file on local disk to act as the speech placeholder."""
+        """Creates a short spoken dummy audio file on local disk to act as the speech placeholder."""
         fallback_dir = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "static_storage"
@@ -68,12 +82,12 @@ class TTSService:
         os.makedirs(fallback_dir, exist_ok=True)
         placeholder_path = os.path.join(fallback_dir, "speech_placeholder.mp3")
         
-        # If it doesn't exist, write a tiny dummy silent MP3 file (100 bytes)
+        # If it doesn't exist, write a fallback voice placeholder using gTTS
         if not os.path.exists(placeholder_path):
             try:
-                dummy_mp3 = b"ID3\x03\x00\x00\x00\x00\x00\x00" + b"\x00" * 100
-                with open(placeholder_path, "wb") as f:
-                    f.write(dummy_mp3)
+                from gtts import gTTS
+                tts = gTTS(text="This is your custom A.I. radio station segment. Please stay tuned.", lang='en')
+                tts.save(placeholder_path)
                 logger.info(f"Created local fallback voice placeholder at: {placeholder_path}")
             except Exception as e:
                 logger.error(f"Failed to create dummy voice placeholder: {str(e)}")

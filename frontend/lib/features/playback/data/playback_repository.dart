@@ -44,6 +44,13 @@ class PlaybackRepository {
       
       final List<dynamic> data = response.data;
       return data.map((item) {
+        final rawStreamUrl = item["stream_url"] as String?;
+        final resolvedStreamUrl = (rawStreamUrl == null || rawStreamUrl.isEmpty)
+            ? ""
+            : (rawStreamUrl.startsWith("http")
+                ? rawStreamUrl
+                : "${_dio.options.baseUrl}$rawStreamUrl");
+
         return MediaItem(
           id: item["id"].toString(),
           album: item["album"],
@@ -54,7 +61,7 @@ class PlaybackRepository {
           extras: {
             "queue_id": item["queue_id"],
             "type": item["type"],
-            "stream_url": item["stream_url"],
+            "stream_url": resolvedStreamUrl,
             "transcript": item["transcript"]
           },
         );

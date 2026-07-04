@@ -81,4 +81,20 @@ class DJScriptEngine:
         else:
             return "Here is your quick news brief: Tech companies announced major green energy initiatives to reduce carbon emissions."
 
+    def generate_traffic_report(self, personality: str, location: str = "Pune") -> str:
+        personality = personality.lower()
+        
+        if personality == "professional":
+            return f"Traffic update for {location}: Major arteries are flowing smoothly with minor delays reported on the main expressway."
+        elif personality == "funny":
+            return f"Traffic in {location} is currently bumper-to-bumper. Great time to practice your car karaoke, folks!"
+        elif personality == "sarcastic":
+            return f"Traffic update: The highway is currently a parking lot. Good thing we all love sitting in our cars doing nothing."
+        elif personality == "calm":
+            return f"Traffic is moving slowly and peacefully today in {location}. Relax, take your time, and travel safely."
+        elif personality == "energetic":
+            return f"TRAFFIC UPDATE! ROAD IS CLEAR AND FLOWING! BLAST YOUR MUSIC AND CRUISE HOME SAFE!"
+        else:
+            return f"Here is the local traffic update for {location}: Roads are mostly clear with normal commute times today."
+
 script_engine = DJScriptEngine()

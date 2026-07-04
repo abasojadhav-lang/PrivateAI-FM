@@ -85,7 +85,14 @@ async def get_playback_queue(
     else:
         db_songs = []
         for s in songs:
-            stream_url = await storage_service.get_streaming_url(s.storage_url) if s.storage_url else "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+            if s.storage_url:
+                stream_url = await storage_service.get_streaming_url(s.storage_url)
+            else:
+                # Generate a dynamic spoken placeholder via TTS to bypass CORS blockages on the Web player
+                placeholder_text = f"Now playing placeholder audio for {s.title} by {s.artist}."
+                tts_key = await tts_service.synthesize_speech(placeholder_text)
+                stream_url = await storage_service.get_streaming_url(tts_key)
+                
             db_songs.append({
                 "id": s.id,
                 "title": s.title,
