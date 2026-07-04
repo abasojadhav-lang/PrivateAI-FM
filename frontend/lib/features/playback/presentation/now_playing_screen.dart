@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:glass_kit/glass_kit.dart';
 import 'package:frontend/core/theme/theme.dart';
 import 'package:frontend/features/playback/presentation/playback_controller.dart';
+import 'package:audio_service/audio_service.dart';
 
 class NowPlayingScreen extends ConsumerStatefulWidget {
   const NowPlayingScreen({super.key});

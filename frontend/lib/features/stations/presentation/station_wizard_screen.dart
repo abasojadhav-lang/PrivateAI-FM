@@ -21,6 +21,8 @@ class _StationWizardScreenState extends ConsumerState<StationWizardScreen> {
   String _selectedPersonality = "Funny";
   String _selectedVoice = "Male";
   final List<String> _selectedGenres = ["Pop"];
+  final List<String> _selectedLanguages = ["Marathi"];
+  final List<String> _languages = ["Marathi", "Hindi", "English"];
   String _newsFrequency = "Medium";
   String _weatherFrequency = "Medium";
 
@@ -58,6 +60,7 @@ class _StationWizardScreenState extends ConsumerState<StationWizardScreen> {
       mood: _selectedMood,
       musicPreferences: {
         "genres": _selectedGenres,
+        "languages": _selectedLanguages,
       },
       voiceConfig: {
         "personality": _selectedPersonality,
@@ -342,6 +345,35 @@ class _StationWizardScreenState extends ConsumerState<StationWizardScreen> {
                     _selectedGenres.add(genre);
                   } else {
                     _selectedGenres.remove(genre);
+                  }
+                });
+              },
+              selectedColor: AppColors.primary,
+              backgroundColor: AppColors.cardBackground,
+              labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textSecondary),
+            );
+          }).toList(),
+        ),
+        
+        const SizedBox(height: 16),
+        Text("Select Languages", style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: _languages.map((lang) {
+            final isSelected = _selectedLanguages.contains(lang);
+            return FilterChip(
+              label: Text(lang),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  if (selected) {
+                    _selectedLanguages.add(lang);
+                  } else {
+                    if (_selectedLanguages.length > 1) {
+                      _selectedLanguages.remove(lang);
+                    }
                   }
                 });
               },

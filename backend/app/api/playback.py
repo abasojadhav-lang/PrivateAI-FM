@@ -104,18 +104,52 @@ async def get_playback_queue(
                 "stream_url": stream_url
             })
 
-    # Filter songs based on station genre preferences if specified
+    # 1. Filter songs by station language preferences (default to Marathi if not set)
+    pref_languages = [l.lower() for l in station.music_preferences.get("languages", ["Marathi"])] if station else ["marathi"]
+    
+    lang_songs = []
+    for s in db_songs:
+        genre_parts = s["genre"].split(":")
+        song_lang = genre_parts[0].lower() if len(genre_parts) > 1 else "english"
+        if song_lang in pref_languages:
+            lang_songs.append(s)
+            
+    if lang_songs:
+        db_songs = lang_songs
+
+    # 2. Filter songs by station genre preferences if specified
     if genres:
-        filtered_songs = [
-            s for s in db_songs 
-            if any(g.lower() in s["genre"].lower() for g in genres)
-        ]
-        # Fallback if filtering returns nothing so station doesn't go silent
+        filtered_songs = []
+        for s in db_songs:
+            genre_parts = s["genre"].split(":")
+            sub_genre = genre_parts[1].lower() if len(genre_parts) > 1 else s["genre"].lower()
+            if any(g.lower() in sub_genre for g in genres):
+                filtered_songs.append(s)
         if filtered_songs:
             db_songs = filtered_songs
 
-    # Shuffle the songs to create a varied queue
-    random.shuffle(db_songs)
+    # 3. Morning Devotional Priority: Prioritize devotional songs if user opens FM in the morning (5:00 AM - 11:59 AM)
+    from datetime import datetime
+    current_hour = datetime.now().hour
+    is_morning = 5 <= current_hour < 12
+
+    devotional_songs = []
+    other_songs = []
+    
+    for s in db_songs:
+        genre_parts = s["genre"].split(":")
+        sub_genre = genre_parts[1].lower() if len(genre_parts) > 1 else s["genre"].lower()
+        if "devotional" in sub_genre:
+            devotional_songs.append(s)
+        else:
+            other_songs.append(s)
+
+    if is_morning and devotional_songs:
+        random.shuffle(devotional_songs)
+        random.shuffle(other_songs)
+        db_songs = devotional_songs + other_songs
+    else:
+        random.shuffle(db_songs)
     
     queue = []
     item_index = 0

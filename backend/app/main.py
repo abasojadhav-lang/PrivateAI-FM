@@ -27,6 +27,13 @@ async def on_startup():
     async with engine.begin() as conn:
         # Create all tables if they do not exist
         await conn.run_sync(Base.metadata.create_all)
+    
+    # Seed default songs if database is empty
+    from app.core.database import AsyncSessionLocal
+    from app.core.seeder import seed_default_songs
+    async with AsyncSessionLocal() as db:
+        await seed_default_songs(db)
+        
     await tts_service.create_placeholder_file_if_missing()
 
 # Register routers
