@@ -83,119 +83,142 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen>
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // 1. Rotating Vinyl or AI Speech Graphic
-                  Center(
-                    child: isSpeech
-                        ? _buildDJConsole(currentItem?.extras?['transcript'] ?? '', currentItem?.title ?? '')
-                        : _buildRotatingVinyl(),
-                  ),
-                  
-                  // 2. Track Titles
-                  Column(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWideScreen = constraints.maxWidth > 800;
+
+                  final playerContent = Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Text(
-                        currentItem?.title ?? "Offline Station",
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      // 1. Rotating Vinyl or AI Speech Graphic
+                      Center(
+                        child: isSpeech
+                            ? _buildDJConsole(currentItem?.extras?['transcript'] ?? '', currentItem?.title ?? '')
+                            : _buildRotatingVinyl(),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        currentItem?.artist ?? "Connect to a Station to start",
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.secondary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                  
-                  // 3. Playback Controls & Progress Bar
-                  Column(
-                    children: [
-                      // Progress Bar / Seek slider (Simplified mockup for Phase 2)
-                      SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          activeTrackColor: AppColors.secondary,
-                          inactiveTrackColor: AppColors.border,
-                          thumbColor: Colors.white,
-                          trackHeight: 4,
-                          thumbShape: const RoundSliderOverlayShape(overlayRadius: 8),
-                        ),
-                        child: Slider(
-                          value: 0.3,
-                          onChanged: (val) {},
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text("0:45", style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                            Text(
-                              currentItem != null 
-                                ? "${currentItem.duration?.inMinutes}:${(currentItem.duration!.inSeconds % 60).toString().padLeft(2, '0')}"
-                                : "3:00", 
-                              style: TextStyle(color: AppColors.textSecondary, fontSize: 12)
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
                       
-                      // Glassmorphism controls layout
-                      GlassContainer.clearGlass(
-                        height: 90,
-                        width: double.infinity,
-                        borderRadius: BorderRadius.circular(24),
-                        borderColor: AppColors.border,
-                        borderWidth: 1.0,
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.cardBackground.withOpacity(0.3),
-                            AppColors.cardBackground.withOpacity(0.05),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.skip_previous, size: 36, color: Colors.white),
-                              onPressed: () => ref.read(playbackControllerProvider.notifier).skipToPrevious(),
+                      // 2. Track Titles
+                      Column(
+                        children: [
+                          Text(
+                            currentItem?.title ?? "Offline Station",
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundColor: AppColors.primary,
-                              child: IconButton(
-                                icon: Icon(
-                                  isPlaying ? Icons.pause : Icons.play_arrow,
-                                  size: 34,
-                                  color: Colors.white,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            currentItem?.artist ?? "Connect to a Station to start",
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                      
+                      // 3. Playback Controls & Progress Bar
+                      Column(
+                        children: [
+                          SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              activeTrackColor: AppColors.secondary,
+                              inactiveTrackColor: AppColors.border,
+                              thumbColor: Colors.white,
+                              trackHeight: 4,
+                              thumbShape: const RoundSliderOverlayShape(overlayRadius: 8),
+                            ),
+                            child: Slider(
+                              value: 0.3,
+                              onChanged: (val) {},
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("0:45", style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                                Text(
+                                  currentItem != null 
+                                    ? "${currentItem.duration?.inMinutes}:${(currentItem.duration!.inSeconds % 60).toString().padLeft(2, '0')}"
+                                    : "3:00", 
+                                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12)
                                 ),
-                                onPressed: () {
-                                  final controller = ref.read(playbackControllerProvider.notifier);
-                                  isPlaying ? controller.pause() : controller.play();
-                                },
-                              ),
+                              ],
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.skip_next, size: 36, color: Colors.white),
-                              onPressed: () => ref.read(playbackControllerProvider.notifier).skipToNext(),
+                          ),
+                          const SizedBox(height: 16),
+                          
+                          // Glassmorphism controls layout
+                          GlassContainer.clearGlass(
+                            height: 90,
+                            width: double.infinity,
+                            borderRadius: BorderRadius.circular(24),
+                            borderColor: AppColors.border,
+                            borderWidth: 1.0,
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.cardBackground.withOpacity(0.3),
+                                AppColors.cardBackground.withOpacity(0.05),
+                              ],
                             ),
-                          ],
-                        ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.skip_previous, size: 36, color: Colors.white),
+                                  onPressed: () => ref.read(playbackControllerProvider.notifier).skipToPrevious(),
+                                ),
+                                CircleAvatar(
+                                  radius: 30,
+                                  backgroundColor: AppColors.primary,
+                                  child: IconButton(
+                                    icon: Icon(
+                                      isPlaying ? Icons.pause : Icons.play_arrow,
+                                      size: 34,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () {
+                                      final controller = ref.read(playbackControllerProvider.notifier);
+                                      isPlaying ? controller.pause() : controller.play();
+                                    },
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.skip_next, size: 36, color: Colors.white),
+                                  onPressed: () => ref.read(playbackControllerProvider.notifier).skipToNext(),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                ],
+                  );
+
+                  if (isWideScreen) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Left Queue Panel
+                        SizedBox(
+                          width: 320,
+                          child: _buildQueuePanel(context, playerState, currentItem),
+                        ),
+                        const SizedBox(width: 32),
+                        // Right Main Player controls
+                        Expanded(child: playerContent),
+                      ],
+                    );
+                  }
+                  
+                  return playerContent;
+                },
               ),
             ),
           ),
@@ -330,6 +353,106 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen>
                   textAlign: TextAlign.center,
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQueuePanel(BuildContext context, PlayerStateWrapper playerState, MediaItem? currentItem) {
+    final queue = playerState.queue;
+
+    return GlassContainer.clearGlass(
+      borderRadius: BorderRadius.circular(24),
+      borderColor: AppColors.border,
+      borderWidth: 1.0,
+      gradient: LinearGradient(
+        colors: [
+          AppColors.cardBackground.withOpacity(0.2),
+          AppColors.cardBackground.withOpacity(0.05),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              "Broadcast Queue",
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: queue.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "Queue is empty",
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: queue.length,
+                      itemBuilder: (context, index) {
+                        final item = queue[index];
+                        final isCurrent = item.id == currentItem?.id;
+                        final isSong = item.extras?['type'] == 'song';
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isCurrent 
+                                ? AppColors.secondary 
+                                : Colors.transparent,
+                            ),
+                            color: isCurrent 
+                                ? AppColors.secondary.withOpacity(0.15) 
+                                : Colors.white.withOpacity(0.02),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                color: AppColors.cardBackground,
+                                child: isSong
+                                    ? const Icon(Icons.music_note, color: AppColors.primary)
+                                    : const Icon(Icons.record_voice_over, color: AppColors.secondary),
+                              ),
+                            ),
+                            title: Text(
+                              item.title,
+                              style: TextStyle(
+                                color: isCurrent ? Colors.white : AppColors.textPrimary,
+                                fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                                fontSize: 13,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              isSong ? (item.artist ?? "Unknown Artist") : "AI Commentary",
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 11,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () {
+                              ref.read(playbackControllerProvider.notifier).skipToQueueItem(index);
+                            },
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

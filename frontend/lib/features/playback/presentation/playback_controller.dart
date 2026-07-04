@@ -99,6 +99,7 @@ class PlaybackController extends StateNotifier<PlayerStateWrapper> {
   Future<void> pause() => _audioHandler.pause();
   Future<void> skipToNext() => _audioHandler.skipToNext();
   Future<void> skipToPrevious() => _audioHandler.skipToPrevious();
+  Future<void> skipToQueueItem(int index) => _audioHandler.skipToQueueItem(index);
   Future<void> seek(Duration position) => _audioHandler.seek(position);
 }
 

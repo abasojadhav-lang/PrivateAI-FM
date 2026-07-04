@@ -65,6 +65,13 @@ class MyAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
   Future<void> skipToPrevious() => _player.seekToPrevious();
 
   @override
+  Future<void> skipToQueueItem(int index) async {
+    if (index >= 0 && index < queue.value.length) {
+      await _player.seek(Duration.zero, index: index);
+    }
+  }
+
+  @override
   Future<void> stop() async {
     await _player.stop();
     await playbackState.firstWhere((state) => state.processingState == AudioProcessingState.idle);
