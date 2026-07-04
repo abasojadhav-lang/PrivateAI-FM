@@ -8,6 +8,7 @@ import 'package:frontend/features/playback/presentation/now_playing_screen.dart'
 import 'package:frontend/features/stations/presentation/station_controller.dart';
 import 'package:frontend/features/stations/presentation/station_wizard_screen.dart';
 import 'package:frontend/features/playback/data/playback_repository.dart';
+import 'package:dio/dio.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -413,8 +414,15 @@ class HomeScreen extends ConsumerWidget {
                                 const SnackBar(content: Text("Song added successfully!")),
                               );
                             } catch (e) {
+                              String errorMsg = e.toString();
+                              if (e is DioException && e.response?.data != null) {
+                                final data = e.response!.data;
+                                if (data is Map && data.containsKey('detail')) {
+                                  errorMsg = data['detail'].toString();
+                                }
+                              }
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Failed to add song: ${e.toString()}")),
+                                SnackBar(content: Text("Failed to add song: $errorMsg")),
                               );
                             } finally {
                               setState(() {
