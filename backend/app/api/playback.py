@@ -154,8 +154,8 @@ async def get_playback_queue(
     queue = []
     item_index = 0
     
-    # We will build a queue of 10 items: alternating Song -> Speech -> Song -> Speech
-    for s in db_songs[:5]:
+    # We will build a queue of 20 items: alternating Song -> Speech -> Song -> Speech (up to 10 songs)
+    for s in db_songs[:10]:
         # Append Song
         queue.append({
             "queue_id": f"song_{item_index}",

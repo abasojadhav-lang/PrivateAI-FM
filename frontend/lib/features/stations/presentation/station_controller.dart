@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/stations/data/station_repository.dart';
 import 'package:frontend/features/playback/presentation/playback_controller.dart';
+import 'package:frontend/features/auth/presentation/auth_controller.dart';
 
 class StationState {
   final List<Map<String, dynamic>> stations;
@@ -86,5 +87,6 @@ class StationNotifier extends StateNotifier<StationState> {
 
 final stationControllerProvider = StateNotifierProvider<StationNotifier, StationState>((ref) {
   final repo = ref.watch(stationRepositoryProvider);
+  ref.watch(authControllerProvider);
   return StationNotifier(repo, ref);
 });
