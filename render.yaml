@@ -19,10 +19,10 @@ services:
       - key: GCLOUD_TTS_API_KEY
         sync: false
 
-databases:
-  - name: privatefm-db
+  - type: redis
+    name: privatefm-redis
     plan: free
 
-redis:
-  - name: privatefm-redis
+databases:
+  - name: privatefm-db
     plan: free
