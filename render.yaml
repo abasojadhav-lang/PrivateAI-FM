@@ -22,6 +22,9 @@ services:
   - type: redis
     name: privatefm-redis
     plan: free
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: Allow all connections
 
 databases:
   - name: privatefm-db
