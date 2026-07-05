@@ -4,6 +4,9 @@ from app.core.config import settings
 from app.core.database import engine, Base
 from app.api import auth, stations, catalog, music, playback
 from app.services.tts_service import tts_service
+from sqlalchemy import select
+from app.core.database import AsyncSessionLocal
+from app.models.models import User
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -60,3 +63,17 @@ async def db_status():
         "database_url_configured": not db_url.startswith("postgresql+asyncpg://postgres:password@localhost:5432"),
         "hint": "If database_type is SQLite, your stations will delete on every deploy. Configure a persistent PostgreSQL database on Render."
     }
+
+@app.get("/api/admin/users")
+async def get_users():
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(select(User))
+        users = result.scalars().all()
+        return [
+            {
+                "id": u.id,
+                "email": u.email,
+                "created_at": u.created_at.isoformat() if u.created_at else None
+            }
+            for u in users
+        ]
