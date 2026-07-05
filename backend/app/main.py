@@ -50,3 +50,13 @@ async def health_check():
         "project": settings.PROJECT_NAME,
         "database": "connected"
     }
+
+@app.get("/api/db-status")
+async def db_status():
+    db_url = settings.DATABASE_URL
+    is_sqlite = "sqlite" in db_url.lower()
+    return {
+        "database_type": "SQLite (Temporary/Ephemeral)" if is_sqlite else "PostgreSQL (Persistent)",
+        "database_url_configured": not db_url.startswith("postgresql+asyncpg://postgres:password@localhost:5432"),
+        "hint": "If database_type is SQLite, your stations will delete on every deploy. Configure a persistent PostgreSQL database on Render."
+    }
