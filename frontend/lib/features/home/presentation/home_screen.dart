@@ -318,12 +318,15 @@ class HomeScreen extends ConsumerWidget {
   }
 
   void _showAddSongDialog(BuildContext context, WidgetRef ref) {
+    final searchController = TextEditingController();
     final titleController = TextEditingController();
     final artistController = TextEditingController();
     final youtubeController = TextEditingController();
     final coverController = TextEditingController();
     final formKey = GlobalKey<FormState>();
     var isLoading = false;
+    var isSearching = false;
+    List<Map<String, dynamic>> searchResults = [];
 
     showDialog(
       context: context,
@@ -337,55 +340,138 @@ class HomeScreen extends ConsumerWidget {
                 side: BorderSide(color: AppColors.primary.withOpacity(0.3)),
               ),
               title: const Text(
-                "Add Song to Library",
+                "Search & Add Songs",
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
-              content: Form(
-                key: formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextFormField(
-                        controller: titleController,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: const InputDecoration(
-                          labelText: "Song Title *",
-                          labelStyle: TextStyle(color: AppColors.textSecondary),
+              content: SizedBox(
+                width: 450,
+                child: Form(
+                  key: formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Search bar
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: searchController,
+                                style: const TextStyle(color: Colors.white),
+                                decoration: const InputDecoration(
+                                  labelText: "Search Famous Songs",
+                                  hintText: "e.g. Hanuman Chalisa, Zingaat...",
+                                  labelStyle: TextStyle(color: AppColors.textSecondary),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            isSearching
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.secondary),
+                                  )
+                                : IconButton(
+                                    icon: const Icon(Icons.search, color: AppColors.secondary),
+                                    onPressed: () async {
+                                      final query = searchController.text.trim();
+                                      if (query.isEmpty) return;
+                                      setState(() {
+                                        isSearching = true;
+                                      });
+                                      final results = await ref.read(playbackRepositoryProvider).searchCatalog(query);
+                                      setState(() {
+                                        searchResults = results;
+                                        isSearching = false;
+                                      });
+                                    },
+                                  ),
+                          ],
                         ),
-                        validator: (value) => (value == null || value.trim().isEmpty) ? "Required" : null,
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: artistController,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: const InputDecoration(
-                          labelText: "Artist Name *",
-                          labelStyle: TextStyle(color: AppColors.textSecondary),
+                        
+                        // Search results list
+                        if (searchResults.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          const Text("Select a song to auto-fill:", style: TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 6),
+                          Container(
+                            constraints: const BoxConstraints(maxHeight: 180),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.03),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: searchResults.length,
+                              itemBuilder: (context, index) {
+                                final item = searchResults[index];
+                                return ListTile(
+                                  dense: true,
+                                  title: Text(item['title'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                                  subtitle: Text(item['artist'] ?? '', style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+                                  trailing: const Icon(Icons.check_circle_outline, color: AppColors.secondary, size: 18),
+                                  onTap: () {
+                                    setState(() {
+                                      titleController.text = item['title'] ?? '';
+                                      artistController.text = item['artist'] ?? '';
+                                      youtubeController.text = item['youtube_id'] ?? '';
+                                      coverController.text = item['cover_url'] ?? '';
+                                      searchResults = [];
+                                    });
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                        
+                        const Divider(height: 24, color: AppColors.border),
+                        
+                        // Form fields
+                        TextFormField(
+                          controller: titleController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: "Song Title *",
+                            labelStyle: TextStyle(color: AppColors.textSecondary),
+                          ),
+                          validator: (value) => (value == null || value.trim().isEmpty) ? "Required" : null,
                         ),
-                        validator: (value) => (value == null || value.trim().isEmpty) ? "Required" : null,
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: youtubeController,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: const InputDecoration(
-                          labelText: "YouTube Video ID (Optional)",
-                          labelStyle: TextStyle(color: AppColors.textSecondary),
-                          helperText: "e.g. dQw4w9WgXcQ",
-                          helperStyle: TextStyle(color: AppColors.textSecondary),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          controller: artistController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: "Artist Name *",
+                            labelStyle: TextStyle(color: AppColors.textSecondary),
+                          ),
+                          validator: (value) => (value == null || value.trim().isEmpty) ? "Required" : null,
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: coverController,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: const InputDecoration(
-                          labelText: "Cover Image URL (Optional)",
-                          labelStyle: TextStyle(color: AppColors.textSecondary),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          controller: youtubeController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: "YouTube Video ID (Optional)",
+                            labelStyle: TextStyle(color: AppColors.textSecondary),
+                            helperText: "e.g. dQw4w9WgXcQ",
+                            helperStyle: TextStyle(color: AppColors.textSecondary),
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          controller: coverController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: "Cover Image URL (Optional)",
+                            labelStyle: TextStyle(color: AppColors.textSecondary),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -411,8 +497,8 @@ class HomeScreen extends ConsumerWidget {
                                   );
                               Navigator.of(context).pop();
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Song added successfully!")),
-                              );
+                                  const SnackBar(content: Text("Song added successfully!")),
+                                );
                             } catch (e) {
                               String errorMsg = e.toString();
                               if (e is DioException && e.response?.data != null) {

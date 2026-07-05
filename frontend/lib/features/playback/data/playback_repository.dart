@@ -116,6 +116,19 @@ class PlaybackRepository {
     }
   }
 
+  Future<List<Map<String, dynamic>>> searchCatalog(String query) async {
+    try {
+      final response = await _dio.get(
+        "/api/catalog/search",
+        queryParameters: {"q": query, "provider": "youtube"},
+      );
+      final List<dynamic> data = response.data;
+      return List<Map<String, dynamic>>.from(data);
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<void> linkCatalogSong({
     required String title,
     required String artist,

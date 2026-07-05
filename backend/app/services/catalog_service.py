@@ -142,15 +142,36 @@ class SpotifyCatalogService(BaseCatalogService):
 
     def _get_mock_tracks(self, query: str, limit: int) -> List[TrackMetadata]:
         # Return mock results for testing without credentials
-        mock_library = [
-            TrackMetadata("Blinding Lights", "The Weeknd", "After Hours", 200, "spotify_blinding", "yt_blinding", "https://i.scdn.co/image/ab67616d0000b2738863d6e38f6c12a9c68210d4", "Synthwave"),
-            TrackMetadata("As It Was", "Harry Styles", "Harry's House", 167, "spotify_asitwas", "yt_asitwas", "https://i.scdn.co/image/ab67616d0000b273b46b730da962df2f17045b85", "Indie Pop"),
-            TrackMetadata("Shape of You", "Ed Sheeran", "Divide", 233, "spotify_shapeofyou", "yt_shapeofyou", "https://i.scdn.co/image/ab67616d0000b273ba5db46f4b83884b27e6a002", "Pop"),
-            TrackMetadata("Levitating", "Dua Lipa", "Future Nostalgia", 203, "spotify_levitating", "yt_levitating", "https://i.scdn.co/image/ab67616d0000b273bd54e7d46c8793b8ec862590", "Dance Pop"),
-            TrackMetadata("STAY", "The Kid LAROI & Justin Bieber", "F*CK LOVE 3", 141, "spotify_stay", "yt_stay", "https://i.scdn.co/image/ab67616d0000b27341e309eed84b008d2a722f4d", "Pop Rock"),
-        ]
-        
-        filtered = [t for t in mock_library if query.lower() in t.title.lower() or query.lower() in t.artist.lower()]
+        try:
+            from app.core.seeder import SEED_SONGS
+            mock_library = []
+            for s in SEED_SONGS:
+                mock_library.append(
+                    TrackMetadata(
+                        title=s["title"],
+                        artist=s["artist"],
+                        album="Station Catalog",
+                        duration=s["duration"],
+                        spotify_id=f"spotify_{s['youtube_id']}",
+                        youtube_id=s["youtube_id"],
+                        cover_url="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17",
+                        genre=s["genre"]
+                    )
+                )
+        except Exception:
+            mock_library = []
+
+        q = query.lower().strip()
+        if not q:
+            return mock_library[:limit]
+            
+        filtered = []
+        for t in mock_library:
+            if (q in t.title.lower() or 
+                q in t.artist.lower() or 
+                (t.genre and q in t.genre.lower())):
+                filtered.append(t)
+                
         return (filtered if filtered else mock_library)[:limit]
 
 
